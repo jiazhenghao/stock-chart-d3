@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "allowJs": true,
+    "target": "es6",
+    "module": "esnext",
+    "lib": ["dom", "es2015", "es2015.promise", "esnext"],
+    "jsx": "react",
+    "sourceMap": true,
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*", "tests/**/*.ts"],
+  "exclude": ["node_modules"],
+  "types": ["react"]
+}
