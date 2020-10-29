@@ -279,7 +279,7 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
       // redraw Y-axis with animation
       gY.transition()
         .duration(400)
-        .call(d3.axisLeft().scale(yScale).tickPadding(-8))
+        .call(d3.axisRight().scale(yScale).tickPadding(8))
     }, 20)
   }
 }
