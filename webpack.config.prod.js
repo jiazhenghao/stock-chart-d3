@@ -10,12 +10,9 @@ module.exports = {
   mode: 'production',
   watch: false,
   entry: {
-    // main: __dirname + '/src/index.tsx'
     main: path.join(__dirname, '/src/index.tsx')
   },
   output: {
-    // path: __dirname + '/dist',
-    // path: path.join(__dirname, '/dist'),
     path: path.resolve(__dirname, 'dist'),
     filename: 'static/js/[name].[hash:8].js',
     chunkFilename: 'static/js/[name].[hash:8].chunk.js',

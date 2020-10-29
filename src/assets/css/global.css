@@ -1,0 +1,44 @@
+body {
+  background-color: #eee;
+  margin: 0;
+}
+
+h1,
+h2 {
+  color: #7e7e7e;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #444;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 10px;
+  fill: black;
+}
+
+@media (max-width: 768px) {
+  .axis text {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 6px;
+    fill: black;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+  h2 {
+    font-size: 1rem;
+  }
+}

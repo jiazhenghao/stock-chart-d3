@@ -27,6 +27,7 @@ module.exports = {
     semi: 0,
     'import/prefer-default-export': 'off',
     'comma-dangle': ['error', 'never'],
+    'consistent-return': 0,
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/member-delimiter-style': [
@@ -53,11 +54,12 @@ module.exports = {
     'dot-notation': 'error',
     eqeqeq: ['error', 'always'],
     'func-names': 'off',
+    'function-paren-newline': 0,
     indent: ['error', 2, { SwitchCase: 1 }],
+    'implicit-arrow-linebreak': 0,
     'jsx-quotes': ['error', 'prefer-double'],
     'key-spacing': ['error', { beforeColon: false, afterColon: true }],
     'keyword-spacing': ['error', { before: true, after: true }],
-    // 'linebreak-style': ['error', 'unix'],
     'linebreak-style': 0,
     'max-depth': ['error', 5],
     'max-len': [
@@ -76,6 +78,8 @@ module.exports = {
         properties: false
       }
     ],
+    'no-nested-ternary': 0,
+    'no-confusing-arrow': 0,
     'no-array-constructor': 'error',
     'no-bitwise': 'error',
     'no-caller': 'error',
@@ -84,6 +88,10 @@ module.exports = {
     'no-shadow': 'error',
     'no-undef': 'error',
     'no-var': 'error',
+    'no-plusplus': 0,
+    'no-cond-assign': 0,
+    'object-curly-newline': 0,
+    'operator-linebreak': 0,
     'prefer-arrow-callback': 'error',
     'arrow-parens': 0,
     'prefer-template': 0,
@@ -93,7 +101,7 @@ module.exports = {
       1,
       { extensions: ['.js', '.jsx', 'ts', 'tsx'] }
     ],
-    'space-before-function-paren': ['error', 'never'],
+    'space-before-function-paren': 0,
     'spaced-comment': [
       'error',
       'always',

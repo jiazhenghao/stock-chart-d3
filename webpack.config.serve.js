@@ -11,17 +11,15 @@ module.exports = {
   watch: true,
   entry: {
     hot: 'webpack/hot/dev-server',
-    // checkin: __dirname + '/src/index.tsx'
     checkin: path.join(__dirname, '/src/index.tsx')
   },
   output: {
-    // path: __dirname + '/dist',
     path: path.join(__dirname, '/dist'),
     filename: 'bundle.js',
     publicPath: '/'
   },
   devServer: {
-    contentBase: path.join(__dirname, '/public'), // index.html的位置
+    contentBase: path.join(__dirname, '/public'),
     port,
     hot: true,
     historyApiFallback: true,
