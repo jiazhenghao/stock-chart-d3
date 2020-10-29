@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import * as d3 from 'd3'
 import prices from '@/mock'
 import timeConverter from '@/utils/timeConverter'
@@ -64,7 +65,7 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
 
   gX.selectAll('.tick text').call(wrap, xBand.bandwidth())
 
-  // define x-axis data and scale
+  // define y-axis data and scale
   const ymin = d3.min(prices.map(r => r.Low))
   const ymax = d3.max(prices.map(r => r.High))
   const yScale = d3.scaleLinear().domain([ymin, ymax]).range([h, 0]) // .nice()
@@ -75,7 +76,6 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
     .append('g')
     .attr('class', 'axis y-axis')
     .attr('transform', `translate(${w}, 0)`)
-    // .attr('paddingLeft', '1px')
     .call(yAxis)
 
   // draw chart
@@ -84,7 +84,34 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
     .attr('class', 'chartBody')
     .attr('clip-path', 'url(#clip)')
 
-  // draw rectangles
+  // draw bar start data is from Volumn, do not know if it is right
+  const x = d3
+    .scaleBand()
+    .domain(prices.map(d => d.Timestamp))
+    .range([0, w])
+    .padding(0.1)
+
+  const y = d3
+    .scaleLinear()
+    .domain([0, d3.max(prices, d => d.Volume)])
+    .nice()
+    .range([h, margin.top])
+
+  const bars = svg
+    .append('g')
+    .attr('class', 'bars')
+    .selectAll('rect')
+    .data(prices)
+    .join('rect')
+    .attr('x', d => x(d.Timestamp))
+    .attr('y', d => y(d.Volume))
+    .attr('height', d => y(0) - y(d.Volume))
+    .attr('width', xBand.bandwidth())
+    .attr('fill', d =>
+      d.Open === d.Close ? 'grey' : d.Open > d.Close ? 'red' : 'green'
+    )
+
+  // draw candle rectangles
   const candles = chartBody
     .selectAll('.candle')
     .data(prices)
@@ -115,7 +142,7 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
     .attr('y1', d => yScale(d.High))
     .attr('y2', d => yScale(d.Low))
     .attr('stroke', d =>
-      d.Open === d.Close ? 'white' : d.Open > d.Close ? 'red' : 'green'
+      d.Open === d.Close ? 'grey' : d.Open > d.Close ? 'red' : 'green'
     )
 
   // add defs
@@ -133,7 +160,7 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
   ]
 
   // timer
-  let resizeTimer // : NodeJS.Timeout
+  let resizeTimer
   // define zoom behavior
   const zoom = d3
     .zoom()
@@ -158,10 +185,11 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
       })
     )
 
-    // re-define candles, stems,
+    // re-define candles, stems, bars
     candles
       .attr('x', (d, i) => xScaleZ(i) - (xBand.bandwidth() * t.k) / 2)
       .attr('width', xBand.bandwidth() * t.k)
+
     stems
       .attr(
         'x1',
@@ -171,6 +199,10 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
         'x2',
         (d, i) => xScaleZ(i) - xBand.bandwidth() / 2 + xBand.bandwidth() * 0.5
       )
+
+    bars
+      .attr('x', (d, i) => xScaleZ(i) - (xBand.bandwidth() * t.k) / 2)
+      .attr('width', xBand.bandwidth() * t.k)
 
     // hide the ticks without a label
     d3.selectAll('.xAxis .tick text').each(() => {
@@ -184,9 +216,9 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
   }
 
   function zoomEndFunction() {
-    // console.log('ZOOM END')
     const t = d3.event.transform
     const xScaleZ = t.rescaleX(xScale)
+
     clearTimeout(resizeTimer)
 
     resizeTimer = setTimeout(() => {
@@ -201,14 +233,13 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
           new Date(d.Timestamp).getTime() >= new Date(xmax).getTime()
       )
 
+      // re-define y-axis domain
       const minP = d3.min(filtered, d => d.Low)
       const maxP = d3.max(filtered, d => d.High)
       const buffer = Math.floor((maxP - minP) * 0.1)
-
-      // re-define y-axis domain
       yScale.domain([minP - buffer, maxP + buffer])
 
-      // redraw candle, stem, y-axis with animation
+      // redraw candle with animation
       candles
         .transition()
         .duration(400)
@@ -219,11 +250,33 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
             : yScale(Math.min(d.Open, d.Close)) -
               yScale(Math.max(d.Open, d.Close))
         )
+      // redraw bar with animation
+      bars
+        .transition()
+        .duration(400)
+        .attr('fill', d => {
+          if (
+            new Date(d.Timestamp).getTime() >= new Date(xmin).getTime() ||
+            new Date(d.Timestamp).getTime() < new Date(xmax).getTime()
+          ) {
+            return '#eee'
+          }
+          return d.Open === d.Close
+            ? 'grey'
+            : d.Open > d.Close
+            ? 'red'
+            : 'green'
+        })
+        .style('opacity', 0.25)
+
+      // redraw stem with animation
       stems
         .transition()
         .duration(400)
         .attr('y1', d => yScale(d.High))
         .attr('y2', d => yScale(d.Low))
+
+      // redraw Y-axis with animation
       gY.transition()
         .duration(400)
         .call(d3.axisLeft().scale(yScale).tickPadding(-8))
@@ -231,6 +284,7 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
   }
 }
 
+// dealing with text in X-axis
 function wrap(text, width) {
   text.each(function () {
     const textNode = d3.select(this)
