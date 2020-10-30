@@ -12,6 +12,8 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
   const w = svgWidth - margin.left - margin.right
   const h = svgHeight - margin.top - margin.bottom
 
+  let filtered = prices // initialize
+
   // setup svg
   const svg = d3
     .select('#container')
@@ -19,6 +21,17 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
     .attr('height', h + margin.top + margin.bottom)
     .append('g')
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+
+  // add the lines
+  const focus = svg.append('g').attr('class', 'focus').style('display', 'none')
+  focus.append('circle').attr('r', 3.5)
+  focus.append('line').classed('x', true)
+  focus.append('line').classed('y', true)
+  focus
+    .append('text')
+    .attr('x', 9)
+    .attr('dy', '-1em')
+    .style('fill', 'darkOrange')
 
   // add a rect
   svg
@@ -29,6 +42,51 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
     .style('fill', 'none')
     .style('pointer-events', 'all')
     .attr('clip-path', 'url(#clip)')
+    .on('mouseover', () => focus.style('display', null))
+    .on('mouseout', () => focus.style('display', 'none'))
+    .on('mousemove', mousemove)
+
+  d3.selectAll('.line')
+    .style('fill', 'none')
+    .style('stroke', 'steelblue')
+    .style('stroke-width', '1.5px')
+
+  d3.selectAll('.focus').style('opacity', 0.7)
+  d3.selectAll('.focus circle').style('fill', 'none').style('stroke', 'black')
+  d3.select('.overlay').style('fill', 'none').style('pointer-events', 'all')
+  d3.selectAll('.focus line')
+    .style('fill', 'none')
+    .style('stroke', '#666')
+    .style('stroke-width', '0.5px')
+    .style('stroke-dasharray', '3, 3')
+
+  function mousemove() {
+    const x0 = xScale.invert(d3.mouse(this)[0])
+    let i = Math.round((filtered.length / prices.length) * x0)
+    if (i < 0) i = 0
+    if (i >= filtered.length) i = filtered.length - 1
+
+    focus.attr(
+      'transform',
+      `translate(${(x0 / prices.length) * w}, ${yScale(filtered[i].Close)})`
+    )
+
+    focus
+      .select('line.x')
+      .attr('x1', 0)
+      .attr('y1', 0)
+      .attr('x2', w - (x0 / prices.length) * w)
+      .attr('y2', 0)
+
+    focus
+      .select('line.y')
+      .attr('x1', 0)
+      .attr('x2', 0)
+      .attr('y1', 0)
+      .attr('y2', h - yScale(filtered[i].Close))
+
+    focus.select('text').text(`Open Price: ${filtered[i].Close}`)
+  }
 
   // xmin, xmax is used to define the start & end of x-axis, especially for zooming
   let xmin = d3.min(prices.map(r => r.Timestamp * 1000))
@@ -37,6 +95,7 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
   // convert unix timestamp to display Text on X-axis
   for (let i = 0; i < prices.length; i++) {
     if (typeof prices[i].Timestamp === 'number') {
+      prices[i].unix = prices[i].Timestamp * 1000
       prices[i].Timestamp = timeConverter(prices[i].Timestamp)
     }
   }
@@ -46,11 +105,13 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
   // define x-axis data and band
   const xScale = d3.scaleLinear().domain([-1, dates.length]).range([0, w])
   const xDateScale = d3.scaleQuantize().domain([0, dates.length]).range(dates)
+
   const xBand = d3
     .scaleBand()
     .domain(d3.range(-1, dates.length))
     .range([0, w])
     .padding(0.3)
+
   const xAxis = d3
     .axisBottom()
     .scale(xScale)
@@ -227,7 +288,7 @@ export default function drawChart(svgWidth = 1024, svgHeight = 625) {
       xmax = new Date(xDateScale(Math.floor(xScaleZ.domain()[1])))
 
       // find the data that falls between xmin and xmax
-      const filtered = prices.filter(
+      filtered = prices.filter(
         d =>
           new Date(d.Timestamp).getTime() <= new Date(xmin).getTime() &&
           new Date(d.Timestamp).getTime() >= new Date(xmax).getTime()
